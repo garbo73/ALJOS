@@ -2,7 +2,9 @@ cd ~/aljos
 
 mkdir -p .github/workflows
 
-cat > .github/workflows/build-aljos.yml <<'EOF'
+rm -f .github/workflows/build-aljos.yml
+
+cat > .github/workflows/main.yml <<'EOF'
 name: Build ALJOS APK
 
 on:
@@ -23,7 +25,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: '17'
 
       - name: Configurar Android SDK
         uses: android-actions/setup-android@v3
@@ -45,6 +47,8 @@ jobs:
           path: out/ALJOS.apk
 EOF
 
-git add .github/workflows/build-aljos.yml
-git commit -m "Configurar compilacion ALJOS"
+git add .github/workflows/main.yml
+git config user.name "garbo73"
+git config user.email "garbo73@users.noreply.github.com"
+git commit -m "Corregir workflow de compilacion ALJOS" || true
 git push origin main
