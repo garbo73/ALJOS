@@ -1,0 +1,40 @@
+name: Build ALJOS APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar proyecto
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Configurar Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Instalar herramientas Android
+        run: |
+          sdkmanager "platforms;android-34"
+          sdkmanager "build-tools;34.0.0"
+
+      - name: Compilar ALJOS
+        run: |
+          chmod +x build.sh
+          bash build.sh
+
+      - name: Guardar APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ALJOS-FireTV
+          path: out/ALJOS.apk
