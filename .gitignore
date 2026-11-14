@@ -1,0 +1,8 @@
+key.jks
+*.keystore
+*.jks
+out-test/
+out/
+herramientas/
+respaldo/
+*.bak
