@@ -9,7 +9,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Descargar proyecto
         uses: actions/checkout@v4
@@ -22,27 +21,42 @@ jobs:
 
       - name: Configurar Android SDK
         uses: android-actions/setup-android@v4
-        with:
-          packages: platform-tools
 
       - name: Instalar herramientas Android
         run: |
           yes | sdkmanager --licenses
           sdkmanager "platforms;android-34" "build-tools;34.0.0"
 
+      - name: Recuperar firma original
+        env:
+          KEYSTORE_B64: ${{ secrets.ALJOS_KEYSTORE_BASE64 }}
+          KEYSTORE_PASS: ${{ secrets.ALJOS_KEYSTORE_PASSWORD }}
+        run: |
+          set -e
+          test -n "$KEYSTORE_B64"
+          test -n "$KEYSTORE_PASS"
+          printf '%s' "$KEYSTORE_B64" | base64 --decode > key.jks
+          chmod 600 key.jks
+          keytool -list -keystore key.jks -storepass "$KEYSTORE_PASS" -alias aljos
+
       - name: Compilar ALJOS
+        env:
+          KEYSTORE: key.jks
+          KEYSTORE_PASS: ${{ secrets.ALJOS_KEYSTORE_PASSWORD }}
         run: |
           chmod +x build.sh
-          bash -x build.sh
+          ./build.sh
 
-      - name: Comprobar APK
+      - name: Verificar certificado original
         run: |
-          test -f out/ALJOS.apk
-          ls -lh out/ALJOS.apk
+          CERT=$("$ANDROID_HOME/build-tools/34.0.0/apksigner" verify --print-certs out/ALJOS.apk | awk '/Signer #1 certificate SHA-256 digest:/ {print tolower($NF)}')
+          EXPECTED="43eaa87cb18ce2136ea0a0d70c362119145481b1681667446b177b127cde6749"
+          echo "Certificado: $CERT"
+          test "$CERT" = "$EXPECTED"
 
       - name: Guardar APK
         uses: actions/upload-artifact@v4
         with:
-          name: ALJOS-FireTV
+          name: ALJOS-FireTV-Original-Signature
           path: out/ALJOS.apk
           if-no-files-found: error

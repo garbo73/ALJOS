@@ -27,9 +27,12 @@ javac -nowarn -Xlint:-options -encoding UTF-8 -source 1.8 -target 1.8 -bootclass
 cp out/base.apk out/unsigned.apk; (cd out/dex && zip -q ../unsigned.apk classes.dex)
 "$BT/zipalign" -f 4 out/unsigned.apk out/aligned.apk
 
-# A signing key is made on first build. Keep key.jks: updates must be signed with the same key.
-KS=${KEYSTORE:-key.jks}; PASS=${KEYSTORE_PASS:-aljos22}
-[ -f "$KS" ] || keytool -genkeypair -keystore "$KS" -storepass "$PASS" -keypass "$PASS" -alias aljos \
-  -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=ALJOS" >/dev/null 2>&1
-"$BT/apksigner" sign --ks "$KS" --ks-pass "pass:$PASS" --out out/ALJOS.apk out/aligned.apk
+# Use the original ALJOS signing key. Never generate a replacement.
+KS=${KEYSTORE:-key.jks}
+PASS=${KEYSTORE_PASS:?ERROR: falta KEYSTORE_PASS}
+[ -f "$KS" ] || { echo "ERROR: falta el keystore original" >&2; exit 1; }
+
+"$BT/apksigner" sign --ks "$KS" --ks-key-alias aljos \
+  --ks-pass "pass:$PASS" --key-pass "pass:$PASS" \
+  --out out/ALJOS.apk out/aligned.apk
 echo "Built out/ALJOS.apk ($(du -k out/ALJOS.apk | cut -f1) KB)"
