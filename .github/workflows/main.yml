@@ -28,27 +28,33 @@ jobs:
           java-version: '17'
 
       - name: Configurar Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
+        with:
+          packages: platform-tools
 
-      - name: Instalar herramientas Android
+      - name: Aceptar licencias e instalar herramientas
         run: |
-          sdkmanager "platforms;android-34"
-          sdkmanager "build-tools;34.0.0"
+          yes | sdkmanager --licenses
+          sdkmanager "platforms;android-34" "build-tools;34.0.0"
 
       - name: Compilar ALJOS
         run: |
           chmod +x build.sh
           bash build.sh
 
+      - name: Comprobar APK
+        run: |
+          ls -lh out/ALJOS.apk
+          test -f out/ALJOS.apk
+
       - name: Guardar APK
         uses: actions/upload-artifact@v4
         with:
           name: ALJOS-FireTV
           path: out/ALJOS.apk
+          if-no-files-found: error
 EOF
 
-git add .github/workflows/main.yml
-git config user.name "garbo73"
-git config user.email "garbo73@users.noreply.github.com"
-git commit -m "Corregir workflow de compilacion ALJOS" || true
+git add .github/workflows/main.yml .github/workflows/build-aljos.yml
+git commit -m "Actualizar workflow de compilacion ALJOS"
 git push origin main
