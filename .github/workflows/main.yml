@@ -33,7 +33,7 @@ jobs:
       - name: Compilar ALJOS
         run: |
           chmod +x build.sh
-          bash build.sh
+          bash -x build.sh
 
       - name: Comprobar APK
         run: |
