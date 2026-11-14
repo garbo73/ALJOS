@@ -28,7 +28,7 @@ cp out/base.apk out/unsigned.apk; (cd out/dex && zip -q ../unsigned.apk classes.
 "$BT/zipalign" -f 4 out/unsigned.apk out/aligned.apk
 
 # A signing key is made on first build. Keep key.jks: updates must be signed with the same key.
-KS=${KEYSTORE:-key.jks}; PASS=${KEYSTORE_PASS:-aljos}
+KS=${KEYSTORE:-key.jks}; PASS=${KEYSTORE_PASS:-aljos22}
 [ -f "$KS" ] || keytool -genkeypair -keystore "$KS" -storepass "$PASS" -keypass "$PASS" -alias aljos \
   -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=ALJOS" >/dev/null 2>&1
 "$BT/apksigner" sign --ks "$KS" --ks-pass "pass:$PASS" --out out/ALJOS.apk out/aligned.apk
